@@ -1,26 +1,35 @@
 package channel
 
+import "github.com/awesome-gocui/gocui"
+
 var (
 	Shutdown = make(chan bool, 1)
 
-	InTreeChan  = make(chan Data, 4)
-	OutTreeChan = make(chan Data)
-
-	InHeaderChan  = make(chan Data, 4)
-	OutHeaderChan = make(chan Data)
-
-	InScreenChan  = make(chan Data, 4)
-	OutScreenChan = make(chan Data)
-
-	InCommandChan  = make(chan Data, 4)
-	OutCommandChan = make(chan Data)
+	InTreeChan    = make(chan TreeData, 4)
+	InHeaderChan  = make(chan HeaderData, 4)
+	InScreenChan  = make(chan ScreenData, 4)
+	InCommandChan = make(chan CommandData, 4)
 )
 
-type Data struct {
-	Type    string
-	Integer int
-	Boolean bool
-	String  string
-	Object  interface{}
-	Command string
+type TreeData struct {
+}
+
+type HeaderType uint8
+
+const (
+	MSG HeaderType = iota
+	CLOCK
+)
+
+type HeaderData struct {
+	Type   HeaderType // const enum soon
+	Msg    string
+	Append bool
+	View   *gocui.View
+}
+
+type ScreenData struct {
+}
+
+type CommandData struct {
 }
