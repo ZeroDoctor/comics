@@ -2,7 +2,6 @@ package view
 
 import (
 	"fmt"
-	"sync"
 	"time"
 
 	"github.com/awesome-gocui/gocui"
@@ -10,54 +9,58 @@ import (
 )
 
 type Header struct {
-	view *gocui.View
-	g    *gocui.Gui
-
-	msg   string
-	clock string
+	view       *gocui.View
+	g          *gocui.Gui
+	maxX, maxY int
 }
 
-func SetHeaderView(g *gocui.Gui, maxX, maxY int) error {
-	if v, err := g.SetView("header", 0, 0, maxX-1, (maxY / 15), 0); err != nil {
+func NewHeader(g *gocui.Gui, maxX, maxY int) *Header {
+	return &Header{
+		g:    g,
+		maxX: maxX,
+		maxY: maxY,
+	}
+}
+
+func (h *Header) Layout() error {
+	if v, err := h.g.SetView("header", 0, 0, h.maxX-1, (h.maxY / 15), 0); err != nil {
 		if err != gocui.ErrUnknownView {
 			return err
 		}
 		v.Title = "header"
 		v.Wrap = false
+		h.view = v
+
+		go h.PrintView()
 	}
 
 	return nil
 }
 
-func (h *Header) PrintView(wg *sync.WaitGroup) {
-	defer wg.Done()
+func (h *Header) PrintView() {
 	go h.showClock()
 
 	for data := range channel.InHeaderChan {
-		if h.view != nil {
-			timeNow := time.Now().Format("02/01/2006 15:04:05")
-			h.clock = "Date: " + timeNow
+		timeNow := time.Now().Format("02/01/2006 15:04:05")
+		msg := ""
+		clock := "Date: " + timeNow
 
-			switch data.Type {
-			case "msg":
-				if data.Boolean {
-					h.msg = " " + data.String
-				} else {
-					h.msg += " " + data.String
-				}
+		switch data.Type {
+		case channel.MSG:
+			if data.Append {
+				msg = " " + data.Msg
+			} else {
+				msg += " " + data.Msg
 			}
-			h.Display()
-		} else if data.Type == "view" {
-			h.view = data.Object.(*gocui.View)
 		}
+		h.Display(clock, msg)
 	}
 }
 
-// Display :
-func (h *Header) Display() {
+func (h *Header) Display(clock, msg string) {
 	h.g.UpdateAsync(func(g *gocui.Gui) error {
 		h.view.Clear()
-		fmt.Fprint(h.view, h.clock+h.msg)
+		fmt.Fprint(h.view, clock+msg)
 		return nil
 	})
 }
@@ -69,7 +72,7 @@ func (h *Header) showClock() {
 			return
 		default:
 			if h.view != nil {
-				channel.InHeaderChan <- channel.Data{Type: "clock"}
+				channel.InHeaderChan <- channel.HeaderData{Type: channel.CLOCK}
 			}
 			time.Sleep(time.Millisecond * 500)
 		}

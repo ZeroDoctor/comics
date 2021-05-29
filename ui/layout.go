@@ -10,10 +10,17 @@ import (
 )
 
 func layout(g *gocui.Gui) error {
-
+	var err error
 	maxX, maxY := g.Size()
 
-	err := view.SetHeaderView(g, maxX, maxY)
+	header := view.NewHeader(g, maxX, maxY)
+	err = header.Layout()
+	if err != nil {
+		return err
+	}
+
+	tree := view.NewTree(g, maxX, maxY)
+	err = tree.Layout()
 	if err != nil {
 		return err
 	}
@@ -22,11 +29,11 @@ func layout(g *gocui.Gui) error {
 }
 
 func Start() {
-
 	g, err := gocui.NewGui(gocui.OutputNormal, false)
 	if err != nil {
 		log.Fatal(err)
 	}
+	defer g.Close()
 
 	g.Mouse = false
 	g.Cursor = true
@@ -38,7 +45,6 @@ func Start() {
 	var wg sync.WaitGroup
 	init := [...]string{"tree", "command", "screen", "header"}
 	view.New(init)
-	view.SetupViews(g, &wg)
 	key.SetBindings(g)
 
 	if err := g.MainLoop(); err != nil && err != gocui.ErrQuit {

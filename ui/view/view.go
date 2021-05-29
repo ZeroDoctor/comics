@@ -1,9 +1,6 @@
 package view
 
 import (
-	"sync"
-	"time"
-
 	"github.com/awesome-gocui/gocui"
 	"github.com/zerodoctor/comics/ui/channel"
 )
@@ -17,30 +14,6 @@ type List struct {
 
 func New(views [4]string) {
 	vl = &List{list: views, currentView: 0}
-}
-
-func SetupViews(g *gocui.Gui, wg *sync.WaitGroup) {
-	header := &Header{g: g}
-
-	wg.Add(1)
-	go header.PrintView(wg)
-
-	go waitForViews(g)
-}
-
-func waitForViews(g *gocui.Gui) {
-	for {
-		time.Sleep(100 * time.Millisecond)
-
-		header, err := g.View("header")
-		if err != nil {
-			time.Sleep(100 * time.Millisecond)
-			continue
-		}
-		channel.InHeaderChan <- channel.Data{Type: "view", Object: header}
-
-		return
-	}
 }
 
 func SetCurrentViewOnTop(g *gocui.Gui, name string) (*gocui.View, error) {
@@ -67,11 +40,10 @@ func Quit(g *gocui.Gui, v *gocui.View) error {
 
 	channel.Shutdown <- true
 
-	time.Sleep(750 * time.Millisecond)
-
 	close(channel.InHeaderChan)
-	close(channel.InScreenChan)
-	close(channel.InCommandChan)
+	// close(channel.InTreeChan)
+	// close(channel.InScreenChan)
+	// close(channel.InCommandChan)
 
 	return gocui.ErrQuit
 }
