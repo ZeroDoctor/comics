@@ -19,8 +19,8 @@ func layout(g *gocui.Gui) error {
 		return err
 	}
 
-	tree := view.NewTree(g, maxX, maxY)
-	err = tree.Layout()
+	screen := view.NewScreen(g, maxX, maxY)
+	err = screen.Layout()
 	if err != nil {
 		return err
 	}
@@ -35,7 +35,6 @@ func Start() {
 	}
 	defer g.Close()
 
-	g.Mouse = false
 	g.Cursor = true
 	g.Highlight = true
 	g.SelFgColor = gocui.ColorCyan

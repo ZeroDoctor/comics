@@ -41,8 +41,7 @@ func Quit(g *gocui.Gui, v *gocui.View) error {
 	channel.Shutdown <- true
 
 	close(channel.InHeaderChan)
-	// close(channel.InTreeChan)
-	// close(channel.InScreenChan)
+	close(channel.InScreenChan)
 	// close(channel.InCommandChan)
 
 	return gocui.ErrQuit

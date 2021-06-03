@@ -5,14 +5,10 @@ import "github.com/awesome-gocui/gocui"
 var (
 	Shutdown = make(chan bool, 1)
 
-	InTreeChan    = make(chan TreeData, 4)
 	InHeaderChan  = make(chan HeaderData, 4)
 	InScreenChan  = make(chan ScreenData, 4)
 	InCommandChan = make(chan CommandData, 4)
 )
-
-type TreeData struct {
-}
 
 type HeaderType uint8
 
@@ -29,6 +25,7 @@ type HeaderData struct {
 }
 
 type ScreenData struct {
+	Msg string
 }
 
 type CommandData struct {
